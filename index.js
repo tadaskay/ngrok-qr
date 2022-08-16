@@ -2,19 +2,23 @@
 
 "use strict";
 
-const ngrok = require("ngrok");
-const qrcode = require("qrcode-terminal");
-const chalk = require("chalk");
+import ngrok from "ngrok"
+import qrcode from "qrcode-terminal"
+import chalk from "chalk"
+import cliArgs from "command-line-args"
 
 async function main() {
   const { argv } = process;
   const args = argv.slice(2);
 
-  const options = {
-    port: args && args.length ? args[0] : 3000
-  };
+  const options = cliArgs([
+    { name: "port", type: Number},
+    { name: "authtoken", type: String}
+  ])
 
-  const url = await ngrok.connect(options.port);
+  console.log('options', JSON.stringify(options))
+
+  const url = await ngrok.connect(options);
 
   const code = await new Promise(resolve =>
     qrcode.generate(url, { small: true }, qr => resolve(qr))
@@ -22,7 +26,7 @@ async function main() {
 
   const output = [
     `---------------------------`,
-    `> ngrok http ${options.port}`,
+    `> ngrok http ${JSON.stringify(options)}`,
     `---------------------------`,
     chalk.underline.cyan(url),
     `---------------------------`,
